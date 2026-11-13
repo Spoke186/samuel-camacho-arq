@@ -1,0 +1,12 @@
+packages:
+  - "packages/*"
+
+# Solo estos paquetes pueden ejecutar scripts de instalación.
+allowBuilds:
+  esbuild: true
+  sharp: true
+
+minimumReleaseAgeExclude:
+  - astro@7.3.5
+  - three@0.186.1
+  - vite@8.3.1

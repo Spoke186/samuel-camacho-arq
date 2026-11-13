@@ -1,0 +1,10 @@
+{
+  "name": "@pagx/motion",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "peerDependencies": {
+    "gsap": "^3.13.0",
+    "lenis": "^1.3.0"
+  }
+}

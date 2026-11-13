@@ -1,0 +1,51 @@
+---
+// One family: Newsreader (optical sizes), upright only (#102).
+import '@fontsource-variable/newsreader/opsz'
+import '../styles/global.css'
+
+interface Props { title: string; description: string }
+const { title, description } = Astro.props
+---
+
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <!-- Preview: not indexed until the client approves -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#cdc8bd" />
+    <meta name="color-scheme" content="light dark" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/hero/seq/d/040.webp" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <script is:inline>
+      // Tier before first paint: static = reduced motion or weak device; medium = touch or <=4 cores (native scroll);
+      // high = desktop with Lenis. ?tier= forces one for QA.
+      (() => {
+        const n = navigator, m = (q) => matchMedia(q).matches
+        const tier = m('(prefers-reduced-motion: reduce)') || n.connection?.saveData || (n.deviceMemory && n.deviceMemory <= 2)
+          ? 'static' : m('(pointer: coarse)') || (n.hardwareConcurrency || 8) <= 4 ? 'medium' : 'high'
+        const t = new URLSearchParams(location.search).get('tier') || tier
+        document.documentElement.dataset.tier = t
+        document.documentElement.classList.add('t-' + t)
+        // día / noche (#103): the visitor's choice, else the system's; set before paint so nothing flashes
+        let tema = null
+        try { tema = localStorage.getItem('tema') } catch {}
+        tema = tema || (m('(prefers-color-scheme: dark)') ? 'dark' : 'light')
+        document.documentElement.dataset.theme = tema
+        document.querySelector('meta[name="theme-color"]').content = tema === 'dark' ? '#141816' : '#cdc8bd'
+      })()
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Saltar al contenido</a>
+    <slot />
+    <script>
+      import { init } from '../scripts/site'
+      init()
+    </script>
+  </body>
+</html>

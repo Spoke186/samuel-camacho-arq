@@ -1,0 +1,181 @@
+---
+// The portfolio as a printable document (#103): A4 landscape, one idea per page, same stone, moss and Newsreader.
+// qa/pdf.mjs prints this page to public/samuel-camacho-portafolio.pdf.
+import '@fontsource-variable/newsreader/opsz'
+import { perfil, semestres, construida, obra, seminario, img, type Img, type Proyecto } from '../data/proyectos'
+
+// 08's sheets are collages: open on the shadow model instead, and show its sheets whole
+const s8 = img('s8/sombra-portada', 'Modelo del sector Gamma con las horas de sombra de junio')
+const hoja = (i: Img) => i.plano || i.src.includes('s8/')
+const hero = (p: Proyecto) => (p.titulo === 'Microclima urbano' ? s8 : p.imgs.find((i) => !hoja(i)) ?? p.imgs[0])
+const resto = (p: Proyecto) => p.imgs.filter((i) => i !== hero(p)).slice(0, 4)
+const fit = (i: Img) => (hoja(i) ? 'contain' : 'cover')
+const año = new Date().getFullYear()
+---
+
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{perfil.firma} · Portafolio</title>
+  </head>
+  <body>
+    <!-- cover -->
+    <section class="pg cover">
+      <img class="bleed" src="/hero/seq/d/030.webp" alt="" />
+      <div class="cover-txt">
+        <h1>Samuel<br />Camacho Arq</h1>
+        <p>Portafolio de arquitectura<br />{perfil.semestre} · {perfil.universidad}</p>
+      </div>
+      <p class="cover-k">Torre de vivienda, visualización realista hecha desde su render</p>
+    </section>
+
+    <!-- profile + index -->
+    <section class="pg perfil">
+      <div>
+        <p class="big">Diseño espacios que no solo funcionen: que inspiren y conecten con quienes los habitan.</p>
+      </div>
+      <div class="perfil-r">
+        <p>Soy {perfil.nombre}, estudiante de {perfil.semestre.toLowerCase()} en la {perfil.universidad}. Me interesa cómo el entorno construido cambia la vida diaria, y diseñar con respeto por el lugar, el clima y la gente.</p>
+        <ol class="idx">
+          {semestres.map((s) => <li><span class="n">{s.n}</span><span>{s.proyectos[0].titulo}</span><span class="g">{[s.año, s.tema].filter(Boolean).join(' · ')}</span></li>)}
+          <li><span class="n">00</span><span>{construida.titulo}</span><span class="g">Obra construida</span></li>
+        </ol>
+        <p class="g contact">{perfil.correo} · {perfil.telefono} · {perfil.ciudad}</p>
+      </div>
+    </section>
+
+    {semestres.flatMap((s) => s.proyectos.map((p, k) => (
+      <>
+        <section class="pg pj">
+          <div class="pj-txt">
+            <span class="n big-n">{s.n}</span>
+            <h2>{p.titulo}</h2>
+            <p class="g">{[s.año, s.tema, p.lugar].filter(Boolean).join(' · ')}</p>
+            <p class="txt">{p.texto}</p>
+            {p.datos && <dl>{p.datos.map(([a, b]) => <div><dt>{a}</dt><dd>{b}</dd></div>)}</dl>}
+            {p.creditos && <p class="cred">{p.creditos}</p>}
+          </div>
+          <figure class="pj-img"><img src={hero(p).src} alt={hero(p).alt} /><figcaption>{hero(p).alt}</figcaption></figure>
+        </section>
+        {resto(p).length >= 2 && (
+          <section class={`pg gal gal-${resto(p).length}`}>
+            {resto(p).map((i, j) => <figure class={hoja(i) ? 'plano' : ''}><img src={i.src} alt={i.alt} style={`object-fit:${fit(i)}`} /><figcaption><span class="n">{String(j + 1).padStart(2, '0')}</span>{i.alt}</figcaption></figure>)}
+            <p class="folio">{s.n} · {p.titulo}</p>
+          </section>
+        )}
+      </>
+    )))}
+
+    <!-- built -->
+    <section class="pg cons">
+      <div class="pj-txt">
+        <span class="n big-n acc">00</span>
+        <h2>{construida.titulo}</h2>
+        <p class="txt">{construida.texto}</p>
+      </div>
+      <div class="cons-row">
+        {construida.pasos.map((p, i) => <figure><img src={p.img.src} alt={p.img.alt} /><figcaption><span class="n">0{i + 1}</span>{p.k} · {p.d}</figcaption></figure>)}
+      </div>
+    </section>
+
+    <section class="pg obra">
+      <div class="pj-txt">
+        <h2>{obra.titulo}</h2>
+        <p class="txt">{obra.texto}</p>
+      </div>
+      <figure><img src={obra.antes.src} alt={obra.antes.alt} /><figcaption><span class="n">01</span>Obra negra</figcaption></figure>
+      <figure><img src={obra.despues.src} alt={obra.despues.alt} /><figcaption><span class="n">02</span>Propuesta</figcaption></figure>
+    </section>
+
+    <section class="pg pj">
+      <div class="pj-txt">
+        <h2>{seminario.titulo}</h2>
+        <p class="txt">{seminario.texto}</p>
+        <p class="cred">{seminario.creditos}</p>
+      </div>
+      <div class="sem-grid">{seminario.imgs.map((i) => <figure class="plano"><img src={i.src} alt={i.alt} /></figure>)}</div>
+    </section>
+
+    <!-- back cover -->
+    <section class="pg back">
+      <p class="g">¿Un proyecto, una práctica o una conversación?</p>
+      <p class="hablemos">Hablemos</p>
+      <div class="back-row">
+        <span>{perfil.correo}</span><span>{perfil.telefono}</span><span>{perfil.ciudad}</span><span>samuel-camacho-arq.vercel.app</span>
+      </div>
+      <p class="g pie">{perfil.completo} · {perfil.universidad} · {año}</p>
+    </section>
+  </body>
+</html>
+
+<style is:global>
+  @page { size: 297mm 210mm; margin: 0; }
+  :root { --bg: #cdc8bd; --bg-2: #c2bdb1; --ink: #1c221d; --ink-2: #353c36; --gris: #4e544d; --linea: rgb(28 34 29 / .2); --acc: #4f5d3e; --papel: #e8e4db; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #777; color: var(--ink); font: 400 10.5pt/1.5 'Newsreader Variable', Georgia, serif; }
+  img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  h1, h2, .big, .big-n, .hablemos { font-weight: 400; letter-spacing: -.025em; }
+  .g { color: var(--gris); font-size: 9pt; }
+  .n { color: var(--gris); font-variant-numeric: tabular-nums; }
+  .acc { color: var(--acc) !important; }
+  figure { display: grid; grid-template-rows: 1fr auto; gap: 3mm; min-height: 0; }
+  figure img { min-height: 0; }
+  figcaption { font-size: 8pt; color: var(--gris); display: flex; gap: 3mm; }
+  .plano img { object-fit: contain !important; background: var(--papel); padding: 3mm; }
+
+  .pg { position: relative; width: 297mm; height: 210mm; overflow: hidden; background: var(--bg); padding: 16mm 18mm; page-break-after: always; break-after: page; margin: 0 auto 8mm; }
+  @media print { body { background: none; } .pg { margin: 0; } }
+
+  .cover { padding: 0; color: #f3f0eb; }
+  .bleed { position: absolute; inset: 0; }
+  .cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgb(18 20 23 / .72), transparent 45%); }
+  .cover-txt { position: absolute; z-index: 1; right: 18mm; bottom: 16mm; text-align: right; }
+  .cover h1 { font-size: 64pt; line-height: .86; }
+  .cover-txt p { margin-top: 6mm; font-size: 10pt; opacity: .85; }
+  .cover-k { position: absolute; z-index: 1; left: 18mm; bottom: 16mm; font-size: 8pt; opacity: .75; }
+
+  .perfil { display: grid; grid-template-columns: 1fr 1fr; gap: 18mm; align-items: end; }
+  .big { font-size: 34pt; line-height: .98; }
+  .perfil-r { display: grid; gap: 8mm; color: var(--ink-2); }
+  .idx { list-style: none; border-top: 1px solid var(--ink); }
+  .idx li { display: grid; grid-template-columns: 10mm 1fr auto; gap: 4mm; align-items: baseline; padding: 2.4mm 0; border-bottom: 1px solid var(--linea); color: var(--ink); }
+  .idx .g { font-size: 8pt; }
+
+  .pj { display: grid; grid-template-columns: 88mm 1fr; gap: 12mm; }
+  .pj-txt { display: grid; gap: 4mm; align-content: end; }
+  .big-n { font-size: 72pt; line-height: .8; }
+  .pj h2, .cons h2, .obra h2 { font-size: 26pt; line-height: .98; }
+  .txt { color: var(--ink); }
+  dl { border-top: 1px solid var(--linea); }
+  dl div { display: grid; grid-template-columns: 30mm 1fr; gap: 3mm; padding: 1.6mm 0; border-bottom: 1px solid var(--linea); font-size: 9pt; }
+  dt { color: var(--gris); }
+  dd { margin: 0; }
+  .cred { font-size: 8pt; color: var(--gris); border-top: 1px solid var(--linea); padding-top: 3mm; }
+  .pj-img { height: 100%; }
+
+  .gal { display: grid; gap: 6mm; padding-bottom: 22mm; }
+  .gal-2 { grid-template-columns: 1fr 1fr; }
+  .gal-3 { grid-template-columns: 1.4fr 1fr; grid-template-rows: 1fr 1fr; }
+  .gal-3 figure:first-child { grid-row: span 2; }
+  .gal-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .folio { position: absolute; left: 18mm; bottom: 10mm; font-size: 8pt; color: var(--gris); }
+
+  .cons { display: grid; grid-template-rows: auto 1fr; gap: 8mm; }
+  .cons .pj-txt { grid-template-columns: auto 1fr 1.3fr; align-items: end; column-gap: 10mm; }
+  .cons .big-n { grid-row: span 2; }
+  .cons .txt { grid-column: 3; grid-row: 1 / span 2; }
+  .cons-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; min-height: 0; }
+  .cons-row img { width: 100%; height: auto; aspect-ratio: 3 / 4; }
+  .cons-row figure { grid-template-rows: auto auto; align-content: end; }
+
+  .obra { display: grid; grid-template-columns: 70mm 1fr 1fr; gap: 6mm; }
+  .obra figure img { height: 100%; }
+  .sem-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 5mm; }
+
+  .back { display: grid; align-content: end; gap: 6mm; padding-bottom: 26mm; }
+  .hablemos { font-size: 120pt; line-height: .8; }
+  .back-row { display: flex; gap: 10mm; font-size: 10pt; padding-top: 6mm; border-top: 1px solid var(--linea); }
+  .pie { position: absolute; left: 18mm; right: 18mm; bottom: 10mm; }
+</style>

@@ -1,0 +1,57 @@
+---
+// One semester: a full-frame opener, then each project as sticky text beside a numbered gallery
+import Fig from './Fig.astro'
+import { reales, type Img, type Semestre } from '../data/proyectos'
+
+interface Props { s: Semestre; portada: Img; video?: { d: string; m: string; poster: string }; cifras?: boolean; flip?: boolean; skip?: number[]; sinLaminas?: boolean; titulo?: string; quitar?: string[] }
+const { s, portada, video, cifras = false, flip = false, skip = [], sinLaminas = false, quitar = [] } = Astro.props
+const proyectos = s.proyectos.filter((_, i) => !skip.includes(i))
+const titulo = Astro.props.titulo ?? (s.proyectos.length > 1 && !skip.length ? s.tema : s.proyectos[0].titulo)
+// gallery rhythm: wide, pair, wide, pair…
+const span = (j: number) => (j % 3 === 0 ? 'g-full' : 'g-half')
+const real = video ? undefined : reales[portada.src]
+---
+
+<section class="sem" id={s.id} data-n={s.n}>
+  <div data-vista={real ? '' : undefined} class={`op ${!video && portada.w < 1900 ? 'op-marco' : ''}`} style={`--nw:${portada.w}px;--ar:${portada.w}/${portada.h}`}>
+    <div class="op-media">
+      {video
+        ? <video class="vid" muted loop playsinline preload="none" poster={video.poster} data-d={video.d} data-m={video.m} aria-label={`Recorrido en video: ${titulo}`}></video>
+        : <img src={portada.src} alt={portada.alt} width={portada.w} height={portada.h} loading="lazy" decoding="async" />}
+      {real && (real.vid
+        ? <video class="op-real vid" muted loop playsinline preload="none" poster={real.src} data-d={real.vid.d} data-m={real.vid.m} aria-label={`Visualización realista hecha desde su render: ${titulo}`}></video>
+        : <img class="op-real" src={real.src} alt={`Visualización realista hecha desde su render: ${portada.alt}`} loading="lazy" decoding="async" />)}
+    </div>
+    {real && <div class="vista" role="group" aria-label="Ver como"><button type="button" aria-pressed="true" data-v="0">Su render</button><button type="button" aria-pressed="false" data-v="1">Realista</button></div>}
+    <div class="op-txt">
+      <span class="op-n">{s.n}</span>
+      <div class="op-tt">
+        <h2 class="op-t">{titulo}</h2>
+        <p class="op-meta">{[s.año, s.tema !== titulo ? s.tema : null, proyectos.length === 1 ? s.proyectos[0].lugar : null].filter(Boolean).join(' · ')}</p>
+      </div>
+    </div>
+  </div>
+
+  {proyectos.map((p, i) => {
+    const gal = p.imgs.filter((im) => im.src !== portada.src && !(sinLaminas && im.plano) && !quitar.includes(im.src))
+    return (
+      <article class={`pj ${(i % 2 === 1) !== flip ? 'rev' : ''}`}>
+        <div class="pj-txt">
+          <div class="pj-sticky">
+            {(proyectos.length > 1 || titulo !== p.titulo) && <h3 class="pj-t">{p.titulo}</h3>}
+            {p.lugar && (proyectos.length > 1 || titulo !== p.titulo) && <p class="pj-lugar">{p.lugar}</p>}
+            <p class="pj-p">{p.texto}</p>
+            {p.datos && (cifras
+              ? <dl class="cifras">{p.datos.map(([k, v]) => <div><dd>{v}</dd><dt>{k}</dt></div>)}</dl>
+              : <dl class="datos">{p.datos.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}</dl>)}
+            {p.creditos && <p class="cred">{p.creditos}</p>}
+          </div>
+        </div>
+        <div class="pj-gal">
+          {gal.map((im, j) => <Fig img={im} n={j + 1} class={`${gal.length === 1 ? 'g-full' : span(j)} rise`} natural={span(j) === 'g-full' || gal.length === 1} />)}
+        </div>
+      </article>
+    )
+  })}
+  <slot />
+</section>

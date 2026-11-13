@@ -1,0 +1,372 @@
+---
+import Layout from '../layouts/Layout.astro'
+import Fig from '../components/Fig.astro'
+import Sem from '../components/Sem.astro'
+import { perfil, semestres, obra, construida, seminario, img, partes, luz, laminasHD, encargo, sombras, planta, aptos, recorrido, capas } from '../data/proyectos'
+import mesa from '../data/mesa.json'
+
+const s = Object.fromEntries(semestres.map((x) => [x.id, x]))
+const pick = (id: string, i = 0, j = 0) => s[id].proyectos[i].imgs[j]
+const proyectos = semestres.reduce((n, x) => n + x.proyectos.filter((p) => !p.titulo.startsWith('Ejercicios')).length, 0) + 1 // + seminario
+const indice = semestres.map((x) => ({ n: x.n, id: x.id, año: x.año, tema: x.tema, titulo: x.proyectos[0].titulo, img: x.proyectos[0].imgs[0] }))
+const s8portada = img('s8/sombra-portada', 'Modelo del sector Gamma con las horas de sombra de junio')
+---
+
+<Layout title={`${perfil.firma} · Portafolio`} description={`Portafolio de ${perfil.nombre}, estudiante de Arquitectura de la ${perfil.universidad}: todos sus proyectos, del primer al último semestre.`}>
+  <header class="top">
+    <a href="#inicio" class="top-firma">{perfil.firma}</a>
+    <nav aria-label="Secciones">
+      <a href="#semestres">Proyectos</a>
+      <a href="#construida">Obra</a>
+      <a href="#contacto">Contacto</a>
+      <button class="tema" type="button" aria-pressed="false" aria-label="Modo oscuro"><i aria-hidden="true"></i><span>Noche</span></button>
+    </nav>
+  </header>
+
+  <div class="piso" aria-hidden="true"><span class="piso-k">Semestre</span><span class="piso-n">01</span></div>
+
+  <main id="main">
+    <!-- del render a lo real: his render turns into the built tower at dusk, then night falls with the scroll -->
+    <section class="hero" id="inicio" aria-label={perfil.firma}>
+      <div class="hero-pin">
+        <img class="hero-still" src="/hero/render-d.webp" srcset="/hero/render-m.webp 1080w, /hero/render-d.webp 2560w" sizes="100vw" alt="Torre de vivienda con celosías de madera, render de Samuel Camacho" width="2560" height="1440" fetchpriority="high" />
+        <canvas class="hero-c" aria-hidden="true"></canvas>
+        <div class="hero-text">
+          <h1 class="hero-name">Samuel<br />Camacho Arq</h1>
+          <p class="hero-sub">{perfil.semestre}<br />{perfil.universidad}</p>
+        </div>
+        <p class="hero-tag" aria-live="off"><span class="hero-tag-k">Su render</span><span class="hero-tag-h"></span></p>
+        <a class="hero-down" href="#intro"><span>Baja y mira cómo se construye</span></a>
+      </div>
+    </section>
+
+    <section class="intro" id="intro">
+      <p class="intro-big" data-ink>Diseño espacios que no solo funcionen: que inspiren y conecten con quienes los habitan.</p>
+      <div class="intro-grid">
+        <div class="intro-cols">
+          <p>Soy {perfil.nombre}, estudiante de {perfil.semestre.toLowerCase()} en la {perfil.universidad}. Me interesa cómo el entorno construido cambia la vida diaria, y diseñar con respeto por el lugar, el clima y la gente.</p>
+          <p>Aquí está todo lo que he proyectado, en orden: desde un refugio de adobe en primer semestre hasta el análisis térmico de un barrio en octavo, y, fuera del aula, un edificio que diseñé y ya está construido.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- the index is a building in section: one floor per semester, an elevator on the side -->
+    <section class="indice" id="semestres" aria-labelledby="indice-t">
+      <div class="indice-head">
+        <h2 id="indice-t" class="indice-t">Ocho pisos,<br />ocho semestres</h2>
+        <p class="indice-hint">Elige un piso y sube.</p>
+      </div>
+      <div class="torre-idx" data-torre>
+        <div class="torre-shaft" aria-hidden="true"><span class="torre-car"><b>01</b></span></div>
+        <ol class="torre-pisos">
+          {[...indice].reverse().map((p) => (
+            <li>
+              <a href={`#${p.id}`} class="piso-row" data-n={p.n}>
+                <span class="piso-img" style={`background-image:url(${p.img.src})`}></span>
+                <span class="piso-lvl">N +{(Number(p.n) * 2.8).toFixed(2)}</span>
+                <span class="indice-n">{p.n}</span>
+                <span class="indice-tit">{p.titulo}</span>
+                <span class="indice-tema">{[p.año, p.tema].filter(Boolean).join(' · ')}</span>
+              </a>
+            </li>
+          ))}
+          <li>
+            <a href="#construida" class="piso-row piso-base" data-n="00">
+              <span class="piso-img" style="background-image:url(/img/obra/construida.webp)"></span>
+              <span class="piso-lvl">N ±0.00</span>
+              <span class="indice-n">00</span>
+              <span class="indice-tit">La obra</span>
+              <span class="indice-tema">Fuera del aula</span>
+            </a>
+          </li>
+        </ol>
+      </div>
+    </section>
+    <Sem s={s.s1} portada={pick('s1', 0, 1)} quitar={['/img/s1/aula.webp']}>
+      <!-- 01 · his program plan, redrawn: the pieces add up with the scroll, the legend lights each use -->
+      <div class="planta" data-planta>
+        <div class="planta-in">
+          <div class="planta-ui">
+            <h3 class="pj-t">Adición y sustracción</h3>
+            <p class="pj-p">Tres rectángulos se suman, se restan y se cruzan. Su planta, leída de dos maneras.</p>
+            <div class="planta-modo" role="tablist" aria-label="Lectura de la planta">
+              <button role="tab" aria-selected="true" data-modo="programa">Programa</button>
+              <button role="tab" aria-selected="false" data-modo="relacion">Interrelación</button>
+            </div>
+            <ul class="planta-ley" data-ley="programa">{planta.programa.map(([k, t, col]) => <li><button data-k={k} style={`--c:${col}`}><i></i>{t}</button></li>)}</ul>
+            <ul class="planta-ley" data-ley="relacion" hidden>{planta.relacion.map(([k, t, col]) => <li><button data-k={k} style={`--c:${col}`}><i></i>{t}</button></li>)}</ul>
+          </div>
+          <svg class="planta-svg" viewBox="90 10 440 345" role="img" aria-label="Planta del habitáculo redibujada: tres barras que se cruzan con zonas de color por uso">
+            <defs>
+              <pattern id="tabla" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#e9cdb0" /><path d="M0 5.5h6" stroke="#b98a62" stroke-width=".8" /></pattern>
+            </defs>
+            {planta.piezas.map(([x, y, w, h, p, r], i) => {
+              const cp = planta.programa.find((q) => q[0] === p)?.[2] ?? 'url(#tabla)'
+              const cr = planta.relacion.find((q) => q[0] === r)?.[2] ?? 'url(#tabla)'
+              return <rect class="pz" x={x} y={y} width={w} height={h} data-p={p} data-r={r} data-cp={cp} data-cr={cr} fill={cp} style={`--i:${i}`} />
+            })}
+          </svg>
+        </div>
+      </div>
+
+      <!-- 01 · the three ways to inhabit the refuge -->
+      <div class="partes" data-partes>
+        <div class="partes-ui">
+          <h3 class="pj-t">Aula, pórtico y recinto</h3>
+          <p class="pj-p">Las tres maneras de habitar el refugio, cada una marcada en rojo sobre la planta.</p>
+          <div class="partes-tabs" role="tablist" aria-label="Espacios del habitáculo">
+            {partes.map((p, i) => <button role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-t={p.txt}><span class="fig-n">0{i + 1}</span>{p.k}</button>)}
+          </div>
+          <p class="partes-txt" aria-live="polite">{partes[0].txt}</p>
+        </div>
+        <div class="partes-media">
+          {partes.map((p, i) => <img src={p.img.src} alt={p.img.alt} width={p.img.w} height={p.img.h} loading="lazy" class={i === 0 ? 'on' : ''} />)}
+        </div>
+      </div>
+    </Sem>
+
+    <Sem s={s.s2} portada={pick('s2', 0, 1)} flip quitar={['/img/s2/parador-planta.webp']}>
+      <!-- 02 · the spiral plan draws itself as you scroll -->
+      <div class="espiral" data-espiral>
+        <div class="espiral-in">
+          <div class="espiral-ui">
+            <h3 class="pj-t">La planta en espiral</h3>
+            <p class="pj-p">Una circunferencia que se abre: servicio, comedores en medio círculo, el mirador en el remate del terreno y el bar circular que cierra el giro.</p>
+            <p class="espiral-deg"><span>000</span>°</p>
+          </div>
+          <div class="espiral-plan"><img src="/img/s2/parador-planta.webp" alt="Planta en espiral del parador restaurante" loading="lazy" /></div>
+        </div>
+      </div>
+    </Sem>
+
+    <Sem s={s.s3} portada={pick('s3')} skip={[1]}>
+      <!-- 03 · move the sun across the light box -->
+      <div class="luz" data-luz>
+        <div class="luz-media">
+          <img src={luz.manana.src} alt={luz.manana.alt} loading="lazy" />
+          <img class="luz-b" src={luz.tarde.src} alt={luz.tarde.alt} loading="lazy" />
+        </div>
+        <div class="luz-ui">
+          <h3 class="pj-t">{luz.titulo}</h3>
+          <p class="pj-p">{luz.texto}</p>
+          <div class="luz-arc">
+            <svg viewBox="0 0 200 104" aria-hidden="true"><path d="M8 100 A92 92 0 0 1 192 100" /></svg>
+            <span class="luz-sol" aria-hidden="true"></span>
+            <input type="range" min="0" max="100" value="0" aria-label="Hora del día: de la mañana a la tarde" />
+          </div>
+          <div class="luz-lab"><span>Mañana</span><span>Tarde</span></div>
+          <div class="luz-vis">{luz.visuales.map((v, j) => <Fig img={v} n={j + 1} />)}</div>
+        </div>
+      </div>
+      <div class="ej">
+        <div class="ej-head">
+          <h3 class="pj-t">{s.s3.proyectos[1].titulo}</h3>
+          <p class="pj-p">{s.s3.proyectos[1].texto}</p>
+        </div>
+        <div class="track-wrap">
+          <div class="track">
+            {s.s3.proyectos[1].imgs.filter((i) => !i.src.includes('caja-luz')).map((i, j) => <Fig img={i} n={j + 1} class="track-i" />)}
+          </div>
+        </div>
+      </div>
+    </Sem>
+
+    <Sem s={s.s4} portada={pick('s4', 0, 1)} cifras sinLaminas>
+      <div class="laminas">
+        <div class="laminas-head">
+          <p class="laminas-k">Láminas de entrega</p>
+          <p class="laminas-hint">Pasa el cursor para verlas de cerca</p>
+        </div>
+        <div class="laminas-row">
+          {s.s4.proyectos[0].imgs.slice(2).map((i, j) => <Fig img={i} n={j + 1} class="lamina rise" hd={laminasHD[i.src]} />)}
+        </div>
+      </div>
+      <!-- 04 · pick an apartment, as on a real sales site -->
+      <div class="aptos" data-aptos>
+        <div class="aptos-ui">
+          <h3 class="pj-t">Elige un apartamento</h3>
+          <p class="pj-p">Cinco tipos en las dos torres, de 52 a 81 m².</p>
+          <ol class="aptos-list">
+            {aptos.map((a, i) => <li><button class={i === 0 ? 'on' : ''} data-i={i} data-m2={a.m2}><span class="aptos-k">{a.k}</span><span class="aptos-bar" style={`--w:${a.m2 / 81}`}></span><span class="aptos-m2">{a.m2} m²</span></button></li>)}
+          </ol>
+        </div>
+        <div class="aptos-plan">
+          <p class="aptos-big"><span class="aptos-num">{aptos[0].m2}</span><small>m²</small></p>
+          {aptos.map((a, i) => <img src={a.img.src} alt={a.img.alt} width={a.img.w} height={a.img.h} loading="lazy" class={i === 0 ? 'on' : ''} />)}
+        </div>
+      </div>
+    </Sem>
+    <Sem s={s.s5} portada={pick('s5')} flip quitar={recorrido.puntos.map((p) => p.img.src).concat(recorrido.base.src)}>
+      <!-- 05 · walk the site from above -->
+      <div class="reco" data-reco>
+        <div class="reco-head">
+          <h3 class="pj-t">Recorre el lugar</h3>
+          <p class="pj-p">Toca cada punto sobre la vista superior.</p>
+        </div>
+        <div class="reco-map">
+          <img src={recorrido.base.src} alt={recorrido.base.alt} width={recorrido.base.w} height={recorrido.base.h} loading="lazy" />
+          {recorrido.puntos.map((p, i) => <button class="reco-pt" style={`left:${p.x * 100}%;top:${p.y * 100}%`} data-i={i} aria-label={p.k}><span>{i + 1}</span></button>)}
+          <div class="reco-card" hidden>
+            <img alt="" />
+            <div><p class="reco-k"></p><p class="reco-t"></p></div>
+            <button class="reco-x" aria-label="Cerrar">×</button>
+          </div>
+        </div>
+        <script type="application/json" class="reco-data" set:html={JSON.stringify(recorrido.puntos.map((p) => ({ k: p.k, txt: p.txt, src: p.img.src, alt: p.img.alt })))} />
+      </div>
+    </Sem>
+    <Sem s={s.s6} portada={pick('s6')} />
+
+    <Sem s={s.s7} portada={img('s7/cultural-video', 'El centro cultural y su torre, cuadro del recorrido en video')} flip skip={[0]} titulo={s.s7.tema}>
+      <!-- 07 · walk through the cultural centre: the scroll is the camera -->
+      <div class="camina" data-camina data-n="110" data-nm="80">
+        <div class="camina-in">
+          <canvas class="camina-c" aria-label="Recorrido por el centro cultural, controlado con el scroll"></canvas>
+          <div class="camina-ui">
+            <h3 class="pj-t">Camina el centro cultural</h3>
+            <p class="camina-t"><span>00:00</span> / 00:37</p>
+            <span class="camina-bar"><i></i></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 07 · the brief, answered room by room -->
+      <div class="encargo" data-encargo>
+        <div class="encargo-in">
+          <div class="encargo-ui">
+            <h3 class="pj-t">{s.s7.proyectos[0].titulo}</h3>
+            <p class="pj-lugar">{s.s7.proyectos[0].lugar} · el encargo de {encargo.cliente}</p>
+            <blockquote class="encargo-carta">“{encargo.carta}”</blockquote>
+            <ol class="encargo-list">
+              {encargo.pedidos.map((p, i) => <li><button class={i === 0 ? 'on' : ''} data-i={i}><span class="fig-n">0{i + 1}</span><span>{p.k}</span></button></li>)}
+            </ol>
+            <p class="cred">{s.s7.proyectos[0].creditos}</p>
+          </div>
+          <div class="encargo-media">
+            {encargo.pedidos.map((p, i) => <img src={p.img.src} alt={p.img.alt} width={p.img.w} height={p.img.h} loading="lazy" class={i === 0 ? 'on' : ''} />)}
+          </div>
+        </div>
+      </div>
+    </Sem>
+
+    <Sem s={s.s8} portada={s8portada}>
+      <!-- 08 · his maps as layers on one base, like a GIS viewer -->
+      <div class="capas" data-capas>
+        <div class="capas-ui">
+          <h3 class="pj-t">Capas del sector</h3>
+          <p class="pj-p">Cuatro lecturas del polígono sobre la misma base. Enciende y combina.</p>
+          <ul class="capas-list">{capas.map((x, i) => <li><button aria-pressed={i === 0 ? 'true' : 'false'} data-i={i}><i></i>{x.k}</button></li>)}</ul>
+        </div>
+        <div class="capas-map">
+          {capas.map((x, i) => <img src={x.src} alt={`Mapa de ${x.k.toLowerCase()} del polígono`} loading="lazy" class={i === 0 ? 'on' : ''} />)}
+        </div>
+      </div>
+
+      <!-- 08 · a year of shadows, scrubbed by the scroll -->
+      <div class="sombras" data-sombras>
+        <div class="sombras-in">
+          <div class="sombras-ui">
+            <h3 class="pj-t">Horas de sombra</h3>
+            <p class="pj-p">{sombras.texto}</p>
+            <div class="sombras-tabs" role="tablist" aria-label="Sector">
+              {sombras.sectores.map((x, i) => <button role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-i={i}>{x.k}</button>)}
+            </div>
+            <p class="sombras-now"><span class="sombras-mes">{sombras.cuadros[0].mes}</span><span class="sombras-fr">{sombras.cuadros[0].franja}</span></p>
+            <div class="sombras-line" aria-hidden="true">
+              <span class="sombras-fill"></span>
+              {sombras.cuadros.map((q, i) => <span class="sombras-tick">{i % 2 === 0 ? q.mes.slice(0, 3) : ''}</span>)}
+            </div>
+          </div>
+          <div class="sombras-media">
+            {sombras.sectores.map((x, si) => (
+              <div class={`sombras-set ${si === 0 ? 'on' : ''}`}>
+                {x.srcs.map((src, i) => <img src={src} alt={`Sombras en ${x.k}, ${sombras.cuadros[i].mes}, ${sombras.cuadros[i].franja.toLowerCase()}`} loading="lazy" style={i === 0 ? 'opacity:1' : undefined} />)}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Sem>
+
+    <!-- 00 · his render, built: the lot, the render, the finished building, turning through louvres -->
+    <section class="cons" id="construida" data-cons aria-labelledby="cons-t">
+      <div class="cons-ui">
+        <span class="op-n">00</span>
+        <h2 id="cons-t" class="op-t">{construida.titulo}</h2>
+        <p class="pj-p">{construida.texto}</p>
+        <ol class="cons-pasos">
+          {construida.pasos.map((p, i) => <li><button type="button" aria-pressed={i === 0 ? 'true' : 'false'} data-i={i}><span class="fig-n">0{i + 1}</span><span class="cons-k">{p.k}</span><span class="cons-d">{p.d}</span></button></li>)}
+        </ol>
+      </div>
+      <div class="cons-media">
+        {construida.pasos.map((p, i) => <img class="cons-img" src={p.img.src} alt={p.img.alt} width={p.img.w} height={p.img.h} loading="lazy" decoding="async" style={i === 0 ? '--k:1;z-index:1' : undefined} />)}
+        <p class="cons-tag" aria-live="polite">{construida.pasos[0].k}</p>
+      </div>
+    </section>
+
+    <section class="obra" id="obra">
+      <div class="obra-head">
+        <span class="op-n">Obra</span>
+        <div>
+          <h2 class="op-t">{obra.titulo}</h2>
+          <p class="pj-p">{obra.texto}</p>
+        </div>
+      </div>
+      <div class="ba" style={`aspect-ratio:${obra.despues.w}/${obra.despues.h}`}>
+        <img class="ba-b" src={obra.despues.src} alt={obra.despues.alt} loading="lazy" width={obra.despues.w} height={obra.despues.h} />
+        <img class="ba-a" src={obra.antes.src} alt={obra.antes.alt} loading="lazy" width={obra.antes.w} height={obra.antes.h} />
+        <input class="ba-r" type="range" min="0" max="100" value="50" aria-label="Comparar la obra negra con la propuesta" />
+        <span class="ba-h" aria-hidden="true"></span>
+        <span class="ba-tag ba-tag-a">Obra negra</span><span class="ba-tag ba-tag-b">Propuesta</span>
+      </div>
+      <div class="obra-row">{obra.extra.map((i, j) => <Fig img={i} n={j + 1} class="rise" />)}</div>
+
+      <article class="pj sem-x">
+        <div class="pj-txt"><div class="pj-sticky">
+          <h3 class="pj-t">{seminario.titulo}</h3>
+          <p class="pj-p">{seminario.texto}</p>
+          <p class="cred">{seminario.creditos}</p>
+        </div></div>
+        <div class="pj-gal">{seminario.imgs.map((i, j) => <Fig img={i} n={j + 1} class={`${j % 3 === 0 ? 'g-full' : 'g-half'} rise`} natural={j % 3 === 0} />)}</div>
+      </article>
+    </section>
+
+    <!-- every sheet on one table: drag to look around, sort by semester -->
+    <section class="mesa" id="mesa" data-mesa aria-labelledby="mesa-t">
+      <div class="mesa-head">
+        <h2 id="mesa-t" class="op-t">La mesa de planos</h2>
+        <p class="pj-p">{mesa.length} láminas de entrega, tal como salieron del plotter. Arrastra para recorrer la mesa.</p>
+        <div class="mesa-tools">
+          <button class="mesa-orden" aria-pressed="false">Ordenar por semestre</button>
+          <button class="mesa-z" data-z="-1" aria-label="Alejar">−</button>
+          <button class="mesa-z" data-z="1" aria-label="Acercar">+</button>
+        </div>
+      </div>
+      <div class="mesa-view">
+        <div class="mesa-board">
+          {mesa.map((m, i) => <button class="hoja" data-i={i} data-sem={m.sem} data-full={m.src} data-cap={`Lámina del semestre ${m.sem}`} style={`--w:${m.w};--h:${m.h}`}><img src={m.src} alt={`Lámina del semestre ${m.sem}`} loading="lazy" draggable="false" /></button>)}
+          {[...new Set(mesa.map((m) => m.sem))].map((sem) => <span class="mesa-sem" data-sem={sem}>{sem}</span>)}
+        </div>
+      </div>
+    </section>
+
+    <section class="contacto" id="contacto">
+      <p class="contacto-k">¿Un proyecto, una práctica<br />o una conversación?</p>
+      <a class="contacto-big" href={perfil.whatsapp} target="_blank" rel="noopener"><span>Hablemos</span></a>
+      <div class="contacto-row">
+        <a class="btn" href={perfil.whatsapp} target="_blank" rel="noopener">WhatsApp</a>
+        <a href={`mailto:${perfil.correo}`}>{perfil.correo}</a>
+        <a href={`tel:+57${perfil.telefono.replaceAll(' ', '')}`}>{perfil.telefono}</a>
+        <a href="/samuel-camacho-portafolio.pdf" download>Portafolio en PDF</a>
+        <span>{perfil.ciudad}</span>
+      </div>
+      <p class="pie"><span>{perfil.completo}</span><span>{perfil.universidad}</span><span>{new Date().getFullYear()}</span></p>
+    </section>
+  </main>
+
+  <dialog class="lb" aria-label="Imagen ampliada">
+    <button class="lb-x" aria-label="Cerrar">Cerrar</button>
+    <img class="lb-img" alt="" />
+    <p class="lb-cap"></p>
+  </dialog>
+</Layout>

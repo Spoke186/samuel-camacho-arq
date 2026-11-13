@@ -1,0 +1,15 @@
+---
+import { reales, type Img } from '../data/proyectos'
+interface Props { img: Img; class?: string; n?: number; natural?: boolean; hd?: string }
+const { img, class: cls = '', n, natural = false, hd } = Astro.props
+const real = reales[img.src]
+---
+
+<figure data-vista={real ? '' : undefined} class={`fig ${img.plano ? 'contain' : ''} ${cls}`} style={`--nw:${img.w}px`}>
+  <button class="fig-btn" type="button" data-full={hd ?? img.src} data-hd={hd} data-cap={img.alt} aria-label={`Ampliar: ${img.alt}`} style={natural ? `aspect-ratio:${img.w}/${img.h}` : undefined}>
+    <img src={img.src} alt={img.alt} width={img.w} height={img.h} loading="lazy" decoding="async" />
+    {real && <img class="fig-real" src={real.src} alt={`Visualización realista hecha desde su render: ${img.alt}`} loading="lazy" decoding="async" />}
+  </button>
+  {real && <div class="vista" role="group" aria-label="Ver como"><button type="button" aria-pressed="true" data-v="0">Su render</button><button type="button" aria-pressed="false" data-v="1">Realista</button></div>}
+  {n !== undefined && <figcaption><span class="fig-n">{String(n).padStart(2, '0')}</span>{img.alt}</figcaption>}
+</figure>
